@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import time
@@ -72,8 +72,8 @@ class device(object):
         value from that position for each of the cascaded devices.
         """
         for deviceId in range(self._cascaded):
-            yield position + constants.MAX7219_REG_DIGIT0
-            yield buf[(deviceId * self.NUM_DIGITS) + position]
+            yield(position + constants.MAX7219_REG_DIGIT0)
+            yield(buf[(deviceId * self.NUM_DIGITS) + position])
 
     def clear(self, deviceId=None):
         """
