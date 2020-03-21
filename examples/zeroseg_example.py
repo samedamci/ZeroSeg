@@ -27,20 +27,24 @@ def date(device, deviceId):
 
 def clock(device, deviceId, seconds):
 
-    for _ in xrange(seconds):
+    for _ in range(seconds):
         now = datetime.now()
         hour = now.hour
         minute = now.minute
         second = now.second
-        dot = second % 2 == 0                # calculate blinking dot
+        #dot = second % 2 == 0                # calculate blinking dot
         # Set hours
-        device.letter(deviceId, 4, int(hour / 10))     # Tens
-        device.letter(deviceId, 3, hour % 10, dot)     # Ones
+        device.letter(deviceId, 8, int(hour / 10))     # Tens
+        device.letter(deviceId, 7, hour % 10)     # Ones
+        device.letter(deviceId, 6, '.')                # dot
         # Set minutes
-        device.letter(deviceId, 2, int(minute / 10))   # Tens
-        device.letter(deviceId, 1, minute % 10)        # Ones
+        device.letter(deviceId, 5, int(minute / 10))   # Tens
+        device.letter(deviceId, 4, minute % 10)        # Ones
+        device.letter(deviceId, 3, '.')                # dot
+        # Set seconds
+        device.letter(deviceId, 2, int(second / 10))
+        device.letter(deviceId, 1, second % 10)
         time.sleep(1)
-
 
 device = led.sevensegment()
 
@@ -55,15 +59,15 @@ device.clear()
 clock(device, 0, seconds=10)
 
 # Brightness
-for x in xrange(5):
-    for intensity in xrange(16):
+for x in range(5):
+    for intensity in range(16):
         device.brightness(intensity)
         time.sleep(0.1)
 device.brightness(7)
 
 # Scrolling
-for x in xrange(2):
-    for _ in xrange(8):
+for x in range(2):
+    for _ in range(8):
         device.scroll_right()
         time.sleep(0.1)
     time.sleep(1)

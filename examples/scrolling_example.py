@@ -7,8 +7,8 @@ device = led.sevensegment()
 
 while True:
     device.write_number(deviceId=0, value=1234)
-    for x in xrange(2):
-        for _ in xrange(8):
+    for x in range(2):
+        for _ in range(8):
             device.scroll_right()
             time.sleep(0.1)
         time.sleep(1)
