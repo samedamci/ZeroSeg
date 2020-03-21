@@ -34,19 +34,19 @@ I recommend using a fresh Raspbian image to avoid any conflicts.
 
  6. Reboot your Raspberry Pi by entering 'sudo reboot' and hit enter
 
- 7. Once rebooted, run `sudo apt-get install git build-essential python-dev python-pip`. Enter 'Y' when prompted, and hit enter. Let the install run.
+ 7. Once rebooted, run `sudo apt install git build-essential python3-dev python3-pip -y`.
 
- 8. Enter `cd` in the terminal and hit enter, to ensure you're in the home directory
+ 8. Run `pip3 install --user RPi.GPIO spidev`.
 
- 9. Next run `git clone https://github.com/AverageMaker/ZeroSeg.git` to download the ZeroSeg code library to your Pi.
+ 9. Enter `cd` in the terminal and hit enter, to ensure you're in the home directory
 
- 10. Enter `cd ZeroSeg` to enter your new ZeroSeg directory
+ 10. Next run `git clone https://github.com/AverageMaker/ZeroSeg.git` to download the ZeroSeg code library to your Pi.
 
- 11. Next run `sudo python setup.py install`
+ 11. Enter `cd ZeroSeg` to enter your new ZeroSeg directory
 
- 12. With the files now downloaded, complete the SPI setup. Whilst still in the ZeroSeg directory, run the following command and hit enter `sudo pip install spidev`
+ 12. Next run `sudo python setup.py install`
 
- 16. Optional: To delete the files you probably won't need, and reduce clutter, whilst in the ZeroSeg directory run `rm LICENSE.md`, `rm README.md` and `rm setup.py`.
+ Optional: To delete the files you probably won't need, and reduce clutter, whilst in the ZeroSeg directory run `rm LICENSE.md`, `rm README.md` and `rm setup.py`.
 
 Run the Code Example
 ------------
