@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from RPi import GPIO
-from typing import Literal
 
 
 class Button:
@@ -12,9 +11,10 @@ class Button:
         GPIO.setup(self.switch1, GPIO.IN)
         GPIO.setup(self.switch2, GPIO.IN)
 
-    def pressed(self, button: Literal["left", "right"]) -> bool:
+    def pressed(self, button: str) -> bool:
         """
         Get button status (bool), check if is pressed.
+        Accepted values: 'left', 'right'.
         """
         if button == "left":
             if not GPIO.input(self.switch1):
