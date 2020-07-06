@@ -40,8 +40,7 @@ class device(object):
         """
         import spidev
 
-        self._cascaded = 1
-        self._buffer = [0] * self.NUM_DIGITS * self._cascaded
+        self._buffer = [0] * self.NUM_DIGITS
         self._spi = spidev.SpiDev()
         self._spi.open(spi_bus, spi_device)
         self._vertical = vertical
@@ -63,7 +62,7 @@ class device(object):
             <= register
             <= constants.MAX7219_REG_DISPLAYTEST
         )
-        self._write([register, data] * self._cascaded)
+        self._write([register, data])
 
     def _write(self, data):
         """
@@ -77,17 +76,16 @@ class device(object):
         A generator which yields the digit/column position and the data
         value from that position for each of the cascaded devices.
         """
-        for deviceId in range(self._cascaded):
-            yield (position + constants.MAX7219_REG_DIGIT0)
-            yield (buf[(deviceId * self.NUM_DIGITS) + position])
+        yield (position + constants.MAX7219_REG_DIGIT0)
+        yield (buf[self.NUM_DIGITS) + position])
 
-    def clear(self, deviceId=None):
+    def clear(self):
         """
         Clears the buffer the given deviceId if specified (else clears all
         devices), and flushes.
         """
         for position in range(self.NUM_DIGITS):
-            self.set_byte(1, position + constants.MAX7219_REG_DIGIT0, 0, redraw=False)
+            self.set_byte(position + constants.MAX7219_REG_DIGIT0, 0, redraw=False)
 
         self.flush()
 
@@ -109,8 +107,7 @@ class device(object):
         assert len(buf) == len(self._buffer), "Preprocessed buffer is wrong size"
         if self._vertical:
             tmp_buf = []
-            for x in range(0, self._cascaded):
-                tmp_buf += rotate(buf[x * 8 : x * 8 + 8])
+            tmp_buf += rotate(buf[8 : 8 + 8])
             buf = tmp_buf
 
         for posn in range(self.NUM_DIGITS):
@@ -155,7 +152,7 @@ class device(object):
         items
         """
         t = self._buffer[-1]
-        for i in range((self.NUM_DIGITS * self._cascaded) - 1, 0, -1):
+        for i in range(self.NUM_DIGITS - 1, 0, -1):
             self._buffer[i] = self._buffer[i - 1]
         self._buffer[0] = t
         if redraw:
@@ -169,7 +166,7 @@ class device(object):
         items
         """
         t = self._buffer[0]
-        for i in range(0, (self.NUM_DIGITS * self._cascaded) - 1, 1):
+        for i in range(0, self.NUM_DIGITS - 1, 1):
             self._buffer[i] = self._buffer[i + 1]
         self._buffer[-1] = t
         if redraw:
@@ -330,14 +327,14 @@ class sevensegment(device):
         for char in strValue:
 
             if position < constants.MAX7219_REG_DIGIT0:
-                self.clear(1)
+                self.clear()
                 raise OverflowError("{0} too large for display".format(strValue))
 
             if char == ".":
                 continue
 
             dp = decimalPlaces > 0 and position == decimalPlaces + 1
-            self.letter(1, position, char, dot=dp, redraw=False)
+            self.letter(position, char, dot=dp, redraw=False)
             position -= 1
 
         self.flush()
@@ -350,7 +347,7 @@ class sevensegment(device):
         if len(text) > 8:
             raise OverflowError("{0} too large for display".format(text))
         for pos, char in enumerate(text.ljust(8)[::-1]):
-            self.letter(1, constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
+            self.letter(constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
 
         self.flush()
 
@@ -360,7 +357,7 @@ class sevensegment(device):
         """
         # Add some spaces on (same number as cascaded devices) so that the
         # message scrolls off to the left completely.
-        text += " " * self._cascaded * 8
+        text += " " * 8
         for value in text:
             time.sleep(delay)
             self.scroll_right(redraw=False)
