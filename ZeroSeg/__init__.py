@@ -1,1 +1,1 @@
-from ZeroSeg import buttons
+from ZeroSeg.buttons import Button
