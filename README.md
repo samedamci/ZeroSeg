@@ -31,4 +31,4 @@ The MIT License (MIT)
 
 Copyright (C) 2016 Richard Hull \
 Copyright (C) 2016-2018 Richard Saville \
-Copyright (C) 2020 samedamci <samedamci@disroot.org>
+Copyright (C) 2020 samedamci \<samedamci@disroot.org\>
