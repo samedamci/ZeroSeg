@@ -32,7 +32,7 @@ class device(object):
 
     NUM_DIGITS = 8
 
-    def __init__(self, cascaded=1, spi_bus=0, spi_device=0, vertical=False):
+    def __init__(self, spi_bus=0, spi_device=0, vertical=False):
         """
         Constructor: `cascaded` should be the number of cascaded MAX7219
         devices that are connected. `vertical` should be set to True if
@@ -40,9 +40,7 @@ class device(object):
         """
         import spidev
 
-        assert cascaded > 0, "Must have at least one device!"
-
-        self._cascaded = cascaded
+        self._cascaded = 1
         self._buffer = [0] * self.NUM_DIGITS * self._cascaded
         self._spi = spidev.SpiDev()
         self._spi.open(spi_bus, spi_device)
@@ -142,7 +140,7 @@ class device(object):
         assert 0 <= intensity < 16, "Invalid brightness: {0}".format(intensity)
         self.command(constants.MAX7219_REG_INTENSITY, intensity)
 
-    def set_byte(self, deviceId, position, value, redraw=True):
+    def set_byte(self, position, value, redraw=True):
         """
         Low level mechanism to set a byte value in the buffer array. If redraw
         is not suppled, or set to True, will force a redraw of _all_ buffer
@@ -152,13 +150,12 @@ class device(object):
 
         Prefer to use the higher-level method calls in the subclasses below.
         """
-        assert 0 <= deviceId < self._cascaded, "Invalid deviceId: {0}".format(deviceId)
         assert (
             constants.MAX7219_REG_DIGIT0 <= position <= constants.MAX7219_REG_DIGIT7
         ), "Invalid digit/column: {0}".format(position)
         assert 0 <= value < 256, "Value {0} outside range 0..255".format(value)
 
-        offset = (deviceId * self.NUM_DIGITS) + position - constants.MAX7219_REG_DIGIT0
+        offset = self.NUM_DIGITS + position - constants.MAX7219_REG_DIGIT0
         self._buffer[offset] = value
 
         if redraw:
@@ -302,7 +299,7 @@ class sevensegment(device):
         ".": 0x80,
     }
 
-    def letter(self, deviceId, position, char, dot=False, redraw=True):
+    def letter(self, position, char, dot=False, redraw=True):
         """
         Looks up the most appropriate character representation for char
         from the digits table, and writes that bitmap value into the buffer
@@ -310,11 +307,10 @@ class sevensegment(device):
         """
         assert dot in [0, 1, False, True]
         value = self._DIGITS.get(str(char), self._UNDEFINED) | (dot << 7)
-        self.set_byte(deviceId, position, value, redraw)
+        self.set_byte(1, position, value, redraw)
 
     def write_number(
         self,
-        deviceId,
         value,
         base=10,
         decimalPlaces=0,
@@ -326,7 +322,6 @@ class sevensegment(device):
         on the specified device. If the formatted number is larger than
         8 digits, then an OverflowError is raised.
         """
-        assert 0 <= deviceId < self._cascaded, "Invalid deviceId: {0}".format(deviceId)
         assert base in self._RADIX, "Invalid base: {0}".format(base)
 
         # Magic up a printf format string
@@ -354,29 +349,28 @@ class sevensegment(device):
         for char in strValue:
 
             if position < constants.MAX7219_REG_DIGIT0:
-                self.clear(deviceId)
+                self.clear(1)
                 raise OverflowError("{0} too large for display".format(strValue))
 
             if char == ".":
                 continue
 
             dp = decimalPlaces > 0 and position == decimalPlaces + 1
-            self.letter(deviceId, position, char, dot=dp, redraw=False)
+            self.letter(1, position, char, dot=dp, redraw=False)
             position -= 1
 
         self.flush()
 
-    def write_text(self, deviceId, text):
+    def write_text(self, text):
         """
         Outputs the text (as near as possible) on the specific device. If
         text is larger than 8 characters, then an OverflowError is raised.
         """
-        assert 0 <= deviceId < self._cascaded, "Invalid deviceId: {0}".format(deviceId)
         if len(text) > 8:
             raise OverflowError("{0} too large for display".format(text))
         for pos, char in enumerate(text.ljust(8)[::-1]):
             self.letter(
-                deviceId, constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False
+                1, constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False
             )
 
         self.flush()
