@@ -290,7 +290,7 @@ class sevensegment(device):
         """
         assert dot in [0, 1, False, True]
         value = self._DIGITS.get(str(char), self._UNDEFINED) | (dot << 7)
-        self.set_byte(1, position, value, redraw)
+        self.set_byte(position, value, redraw)
 
     def write_number(
         self, value, base=10, decimalPlaces=0, zeroPad=False, leftJustify=False,
