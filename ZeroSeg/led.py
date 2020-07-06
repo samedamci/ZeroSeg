@@ -86,22 +86,8 @@ class device(object):
         Clears the buffer the given deviceId if specified (else clears all
         devices), and flushes.
         """
-        assert (
-            not deviceId or 0 <= deviceId < self._cascaded
-        ), "Invalid deviceId: {0}".format(deviceId)
-
-        if deviceId is None:
-            start = 0
-            end = self._cascaded
-        else:
-            start = deviceId
-            end = deviceId + 1
-
-        for deviceId in range(start, end):
-            for position in range(self.NUM_DIGITS):
-                self.set_byte(
-                    deviceId, position + constants.MAX7219_REG_DIGIT0, 0, redraw=False
-                )
+        for position in range(self.NUM_DIGITS):
+            self.set_byte(1, position + constants.MAX7219_REG_DIGIT0, 0, redraw=False)
 
         self.flush()
 
@@ -310,12 +296,7 @@ class sevensegment(device):
         self.set_byte(1, position, value, redraw)
 
     def write_number(
-        self,
-        value,
-        base=10,
-        decimalPlaces=0,
-        zeroPad=False,
-        leftJustify=False,
+        self, value, base=10, decimalPlaces=0, zeroPad=False, leftJustify=False,
     ):
         """
         Formats the value according to the parameters supplied, and displays
@@ -369,9 +350,7 @@ class sevensegment(device):
         if len(text) > 8:
             raise OverflowError("{0} too large for display".format(text))
         for pos, char in enumerate(text.ljust(8)[::-1]):
-            self.letter(
-                1, constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False
-            )
+            self.letter(1, constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
 
         self.flush()
 
