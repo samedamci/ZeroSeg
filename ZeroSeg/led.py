@@ -357,7 +357,7 @@ class sevensegment(device):
         """
         # Add some spaces on (same number as cascaded devices) so that the
         # message scrolls off to the left completely.
-        text += " " * self.NUM_DIGITS
+        text += " " * self.NUM_DIGITS * 2
         for value in text:
             time.sleep(delay)
             self.scroll_right(redraw=False)
