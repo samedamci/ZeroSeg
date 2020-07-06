@@ -40,7 +40,7 @@ class device(object):
         """
         import spidev
 
-        self._buffer = [0] * self.NUM_DIGITS
+        self._buffer = [0] * self.NUM_DIGITS * 2
         self._spi = spidev.SpiDev()
         self._spi.open(spi_bus, spi_device)
         self._vertical = vertical
@@ -77,7 +77,7 @@ class device(object):
         value from that position for each of the cascaded devices.
         """
         yield (position + constants.MAX7219_REG_DIGIT0)
-        yield (buf[self.NUM_DIGITS) + position])
+        yield (buf[self.NUM_DIGITS + position])
 
     def clear(self):
         """
@@ -107,7 +107,7 @@ class device(object):
         assert len(buf) == len(self._buffer), "Preprocessed buffer is wrong size"
         if self._vertical:
             tmp_buf = []
-            tmp_buf += rotate(buf[8 : 8 + 8])
+            tmp_buf += buf[8 + 8 : 8]
             buf = tmp_buf
 
         for posn in range(self.NUM_DIGITS):
