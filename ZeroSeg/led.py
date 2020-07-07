@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from typing import Union, List
 
 
 class constants(object):
@@ -32,7 +33,7 @@ class device(object):
 
     NUM_DIGITS = 8
 
-    def __init__(self, spi_bus=0, spi_device=0, vertical=False):
+    def __init__(self, spi_bus: int = 0, spi_device: int = 0, vertical: bool = False):
         """
         Constructor: `cascaded` should be the number of cascaded MAX7219
         devices that are connected. `vertical` should be set to True if
@@ -52,10 +53,9 @@ class device(object):
         self.brightness(7)  # intensity: range: 0..15
         self.clear()
 
-    def command(self, register, data):
+    def command(self, register: int, data: int):
         """
-        Sends a specific register some data, replicated for all cascaded
-        devices
+        Sends a specific register and some data.
         """
         assert (
             constants.MAX7219_REG_DECODEMODE
@@ -64,14 +64,14 @@ class device(object):
         )
         self._write([register, data])
 
-    def _write(self, data):
+    def _write(self, data: list):
         """
         Send the bytes (which should comprise of alternating command,
         data values) over the SPI device.
         """
         self._spi.xfer(list(data), 5000000)
 
-    def _values(self, position, buf):
+    def _values(self, position: int, buf: List[int]) -> Union[int, List[int]]:
         """
         A generator which yields the digit/column position and the data
         value from that position for each of the cascaded devices.
@@ -92,7 +92,7 @@ class device(object):
     def _preprocess_buffer(self, buf):
         """
         Overload in subclass to provide custom behaviour: see
-        matrix implementation for example.
+        matrix implementation for example. Returns argument.
         """
         return buf
 
@@ -113,17 +113,17 @@ class device(object):
         for posn in range(self.NUM_DIGITS):
             self._write(self._values(posn, buf))
 
-    def brightness(self, intensity):
+    def brightness(self, intensity: int):
         """
         Sets the brightness level of all cascaded devices to the same
         intensity level, ranging from 0..15. Note that setting the brightness
         to a high level will draw more current, and may cause intermittent
         issues / crashes if the USB power source is insufficient.
         """
-        assert 0 <= intensity < 16, "Invalid brightness: {0}".format(intensity)
+        assert 0 <= intensity < 16, "Invalid brightness: {intensity}"
         self.command(constants.MAX7219_REG_INTENSITY, intensity)
 
-    def set_byte(self, position, value, redraw=True):
+    def set_byte(self, position: int, value: int, redraw: bool = True):
         """
         Low level mechanism to set a byte value in the buffer array. If redraw
         is not suppled, or set to True, will force a redraw of _all_ buffer
@@ -135,7 +135,7 @@ class device(object):
         """
         assert (
             constants.MAX7219_REG_DIGIT0 <= position <= constants.MAX7219_REG_DIGIT7
-        ), "Invalid digit/column: {0}".format(position)
+        ), f"Invalid digit/column: {position}"
         assert 0 <= value < 256, "Value {0} outside range 0..255".format(value)
 
         offset = self.NUM_DIGITS + position - constants.MAX7219_REG_DIGIT0
@@ -144,7 +144,7 @@ class device(object):
         if redraw:
             self.flush()
 
-    def rotate_left(self, redraw=True):
+    def rotate_left(self, redraw: bool = True):
         """
         Scrolls the buffer one column to the left. The data that scrolls off
         the left side re-appears at the right-most position. If redraw
@@ -158,7 +158,7 @@ class device(object):
         if redraw:
             self.flush()
 
-    def rotate_right(self, redraw=True):
+    def rotate_right(self, redraw: bool = True):
         """
         Scrolls the buffer one column to the right. The data that scrolls off
         the right side re-appears at the left-most position. If redraw
@@ -172,7 +172,7 @@ class device(object):
         if redraw:
             self.flush()
 
-    def scroll_left(self, redraw=True):
+    def scroll_left(self, redraw: bool = True):
         """
         Scrolls the buffer one column to the left. Any data that scrolls off
         the left side is lost and does not re-appear on the right. An empty
@@ -185,7 +185,7 @@ class device(object):
         if redraw:
             self.flush()
 
-    def scroll_right(self, redraw=True):
+    def scroll_right(self, redraw: bool = True):
         """
         Scrolls the buffer one column to the right. Any data that scrolls off
         the right side is lost and does not re-appear on the left. An empty
@@ -282,7 +282,7 @@ class sevensegment(device):
         ".": 0x80,
     }
 
-    def letter(self, position, char, dot=False, redraw=True):
+    def letter(self, position: int, char: str, dot: bool = False, redraw: bool = True):
         """
         Looks up the most appropriate character representation for char
         from the digits table, and writes that bitmap value into the buffer
@@ -293,14 +293,19 @@ class sevensegment(device):
         self.set_byte(position, value, redraw)
 
     def write_number(
-        self, value, base=10, decimalPlaces=0, zeroPad=False, leftJustify=False,
+        self,
+        value: float,
+        base: int = 10,
+        decimalPlaces: int = 0,
+        zeroPad: bool = False,
+        leftJustify: bool = False,
     ):
         """
         Formats the value according to the parameters supplied, and displays
         on the specified device. If the formatted number is larger than
         8 digits, then an OverflowError is raised.
         """
-        assert base in self._RADIX, "Invalid base: {0}".format(base)
+        assert base in self._RADIX, f"Invalid base: {base}"
 
         # Magic up a printf format string
         size = self.NUM_DIGITS
@@ -315,9 +320,7 @@ class sevensegment(device):
         if leftJustify:
             size *= -1
 
-        formatStr = "{fmt}{size}.{dp}{type}".format(
-            fmt=formatStr, size=size, dp=decimalPlaces, type=self._RADIX[base]
-        )
+        formatStr = f"{formatStr}{size}.{decimalPlaces}{self._RADIX[base]}"
 
         position = constants.MAX7219_REG_DIGIT7
         strValue = formatStr % value
@@ -328,7 +331,7 @@ class sevensegment(device):
 
             if position < constants.MAX7219_REG_DIGIT0:
                 self.clear()
-                raise OverflowError("{0} too large for display".format(strValue))
+                raise OverflowError(f"{strValue} too large for display")
 
             if char == ".":
                 continue
@@ -339,21 +342,21 @@ class sevensegment(device):
 
         self.flush()
 
-    def write_text(self, text):
+    def write_text(self, text: str):
         """
         Outputs the text (as near as possible) on the specific device. If
         text is larger than 8 characters, then an OverflowError is raised.
         """
         if len(text) > 8:
-            raise OverflowError("{0} too large for display".format(text))
+            raise OverflowError(f"{text} too large for display")
         for pos, char in enumerate(text.ljust(8)[::-1]):
             self.letter(constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
 
         self.flush()
 
-    def show_message(self, text, delay=0.4):
+    def show_message(self, text: str, delay: float = 0.4):
         """
-        Transitions the text message across the devices from left-to-right
+        Transitions the text message across the devices from left-to-right.
         """
         # Add some spaces on (same number as cascaded devices) so that the
         # message scrolls off to the left completely.
