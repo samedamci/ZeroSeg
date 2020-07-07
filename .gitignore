@@ -34,3 +34,7 @@ nosetests.xml
 .project
 .pydevproject
 .ropeproject
+
+pyvenv.cfg
+bin/
+lib
