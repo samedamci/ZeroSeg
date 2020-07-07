@@ -25,10 +25,10 @@ class constants(object):
 class device(object):
     """
     Base class for handling multiple cascaded MAX7219 devices.
-    Callers should generally pick the :py:class:`sevensegment` class
+    Callers should generally pick the `sevensegment` class
 
     A buffer is maintained which holds the bytes that will be cascaded
-    every time :py:func:`flush` is called.
+    every time `flush` is called.
     """
 
     NUM_DIGITS = 8
