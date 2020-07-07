@@ -83,7 +83,7 @@ class device(object):
         Clears the buffer of the device.
         """
         for position in range(self.NUM_DIGITS):
-            self.set_byte(position + constants.MAX7219_REG_DIGIT0, 0, redraw=False)
+            self.set_byte(0, position + constants.MAX7219_REG_DIGIT0, redraw=False)
 
         self.flush()
 
@@ -121,7 +121,7 @@ class device(object):
         assert 0 <= intensity < 16, "Invalid brightness: {intensity}."
         self.command(constants.MAX7219_REG_INTENSITY, intensity)
 
-    def set_byte(self, position: int, value: int, redraw: bool = True):
+    def set_byte(self, value: int, position: int, redraw: bool = True):
         """
         Low level mechanism to set a byte value in the buffer array. If redraw
         is not suppled, or set to True, will force a redraw of all buffer
@@ -282,8 +282,8 @@ class sevensegment(device):
 
     def write_char(
         self,
-        position: int = 1,
         char: str = None,
+        position: int = 1,
         dot: bool = False,
         redraw: bool = True,
     ):
@@ -294,7 +294,7 @@ class sevensegment(device):
         """
         assert dot in [0, 1, False, True]
         value = self._DIGITS.get(str(char), self._UNDEFINED) | (dot << 7)
-        self.set_byte(position, value, redraw)
+        self.set_byte(value, position, redraw)
 
     def write_number(
         self,
