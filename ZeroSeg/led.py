@@ -35,9 +35,8 @@ class device(object):
 
     def __init__(self, spi_bus: int = 0, spi_device: int = 0, vertical: bool = False):
         """
-        Constructor: `cascaded` should be the number of cascaded MAX7219
-        devices that are connected. `vertical` should be set to True if
-        the text should start from the header instead perpendicularly.
+        Constructor: `vertical` should be set to True if the text should start from
+        the header instead perpendicularly.
         """
         import spidev
 
@@ -76,13 +75,12 @@ class device(object):
         A generator which yields the digit/column position and the data
         value from that position for each of the cascaded devices.
         """
-        yield (position + constants.MAX7219_REG_DIGIT0)
-        yield (buf[self.NUM_DIGITS + position])
+        yield position + constants.MAX7219_REG_DIGIT0
+        yield buf[self.NUM_DIGITS + position]
 
     def clear(self):
         """
-        Clears the buffer the given deviceId if specified (else clears all
-        devices), and flushes.
+        Clears the buffer of the device.
         """
         for position in range(self.NUM_DIGITS):
             self.set_byte(position + constants.MAX7219_REG_DIGIT0, 0, redraw=False)
@@ -104,7 +102,7 @@ class device(object):
         # Allow subclasses to pre-process the buffer: they shouldn't
         # alter it, so make a copy first.
         buf = self._preprocess_buffer(list(self._buffer))
-        assert len(buf) == len(self._buffer), "Preprocessed buffer is wrong size"
+        assert len(buf) == len(self._buffer), "Preprocessed buffer is wrong size."
         if self._vertical:
             tmp_buf = []
             tmp_buf += buf[8 + 8 : 8]
@@ -120,23 +118,23 @@ class device(object):
         to a high level will draw more current, and may cause intermittent
         issues / crashes if the USB power source is insufficient.
         """
-        assert 0 <= intensity < 16, "Invalid brightness: {intensity}"
+        assert 0 <= intensity < 16, "Invalid brightness: {intensity}."
         self.command(constants.MAX7219_REG_INTENSITY, intensity)
 
     def set_byte(self, position: int, value: int, redraw: bool = True):
         """
         Low level mechanism to set a byte value in the buffer array. If redraw
-        is not suppled, or set to True, will force a redraw of _all_ buffer
-        items: If you are calling this method rapidly/frequently (e.g in a
+        is not suppled, or set to True, will force a redraw of all buffer
+        items. If you are calling this method rapidly/frequently (e.g in a
         loop), it would be more efficient to set to False, and when done,
-        call :py:func:`flush`.
+        call `flush`.
 
         Prefer to use the higher-level method calls in the subclasses below.
         """
         assert (
             constants.MAX7219_REG_DIGIT0 <= position <= constants.MAX7219_REG_DIGIT7
         ), f"Invalid digit/column: {position}"
-        assert 0 <= value < 256, "Value {0} outside range 0..255".format(value)
+        assert 0 <= value < 256, f"Value {value} outside range 0..255."
 
         offset = self.NUM_DIGITS + position - constants.MAX7219_REG_DIGIT0
         self._buffer[offset] = value
@@ -148,7 +146,7 @@ class device(object):
         """
         Scrolls the buffer one column to the left. The data that scrolls off
         the left side re-appears at the right-most position. If redraw
-        is not suppled, or left set to True, will force a redraw of _all_ buffer
+        is not suppled, or left set to True, will force a redraw of all buffer
         items
         """
         t = self._buffer[-1]
@@ -162,7 +160,7 @@ class device(object):
         """
         Scrolls the buffer one column to the right. The data that scrolls off
         the right side re-appears at the left-most position. If redraw
-        is not suppled, or left set to True, will force a redraw of _all_ buffer
+        is not suppled, or left set to True, will force a redraw of all buffer
         items
         """
         t = self._buffer[0]
@@ -282,11 +280,17 @@ class sevensegment(device):
         ".": 0x80,
     }
 
-    def letter(self, position: int, char: str, dot: bool = False, redraw: bool = True):
+    def write_char(
+        self,
+        position: int = 1,
+        char: str = None,
+        dot: bool = False,
+        redraw: bool = True,
+    ):
         """
         Looks up the most appropriate character representation for char
         from the digits table, and writes that bitmap value into the buffer
-        at the given deviceId / position.
+        at the given position.
         """
         assert dot in [0, 1, False, True]
         value = self._DIGITS.get(str(char), self._UNDEFINED) | (dot << 7)
@@ -296,9 +300,9 @@ class sevensegment(device):
         self,
         value: float,
         base: int = 10,
-        decimalPlaces: int = 0,
-        zeroPad: bool = False,
-        leftJustify: bool = False,
+        decimal_places: int = 0,
+        zero_pad: bool = False,
+        left_justify: bool = False,
     ):
         """
         Formats the value according to the parameters supplied, and displays
@@ -309,35 +313,35 @@ class sevensegment(device):
 
         # Magic up a printf format string
         size = self.NUM_DIGITS
-        formatStr = "%"
+        format_str = "%"
 
-        if zeroPad:
-            formatStr += "0"
+        if zero_pad:
+            format_str += "0"
 
-        if decimalPlaces > 0:
+        if decimal_places > 0:
             size += 1
 
-        if leftJustify:
+        if left_justify:
             size *= -1
 
-        formatStr = f"{formatStr}{size}.{decimalPlaces}{self._RADIX[base]}"
+        format_str = f"{format_str}{size}.{decimal_places}{self._RADIX[base]}"
 
         position = constants.MAX7219_REG_DIGIT7
-        strValue = formatStr % value
+        str_value = format_str % value
 
         # Go through each digit in the formatted string,
         # updating the buffer accordingly
-        for char in strValue:
+        for char in str_value:
 
             if position < constants.MAX7219_REG_DIGIT0:
                 self.clear()
-                raise OverflowError(f"{strValue} too large for display")
+                raise OverflowError(f"{str_value} too large for display")
 
             if char == ".":
                 continue
 
-            dp = decimalPlaces > 0 and position == decimalPlaces + 1
-            self.letter(position, char, dot=dp, redraw=False)
+            dp = decimal_places > 0 and position == decimal_places + 1
+            self.write_char(position, char, dot=dp, redraw=False)
             position -= 1
 
         self.flush()
@@ -350,7 +354,7 @@ class sevensegment(device):
         if len(text) > 8:
             raise OverflowError(f"{text} too large for display")
         for pos, char in enumerate(text.ljust(8)[::-1]):
-            self.letter(constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
+            self.write_char(constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
 
         self.flush()
 
