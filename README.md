@@ -14,11 +14,12 @@ The ZeroSeg works with any 40 GPIO pin Raspberry Pi – not just the Pi Zero - a
 a MAX7219CNG integrated circuit, which manages the display of each LED segment, requiring very few
 GPIO pins to run the board.
 
-This board’s circuit is wired in the exact same way as generic 7-segment modules, allowing the
-use of existing code and libraries to easily create Pi Zero projects with 8-character displays.
-
 This code library was originally cloned from Richard Hull's original open source MAX7219 library
 [right here on GitHub](https://github.com/rm-hull/max7219). This has since been replaced with the [luma.led_matrix](https://github.com/rm-hull/luma.led_matrix) library.
+
+# Getting started
+
+Look at project [wiki](https://github.com/samedamci/ZeroSeg/wiki).
 
 ## References
 
