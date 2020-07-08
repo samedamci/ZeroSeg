@@ -21,7 +21,7 @@ setup(
     keywords="raspberry pi rpi led max7219 matrix seven segment zeroseg",
     python_requires=">=3.6",
     install_requires=[
-        'GPIO',
+        'RPi.GPIO',
         'spidev'
     ],
     classifiers=[

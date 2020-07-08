@@ -341,7 +341,7 @@ class sevensegment(device):
                 continue
 
             dp = decimal_places > 0 and position == decimal_places + 1
-            self.write_char(position, char, dot=dp, redraw=False)
+            self.write_char(char, position, dot=dp, redraw=False)
             position -= 1
 
         self.flush()
@@ -354,7 +354,7 @@ class sevensegment(device):
         if len(text) > 8:
             raise OverflowError(f"{text} too large for display")
         for pos, char in enumerate(text.ljust(8)[::-1]):
-            self.write_char(constants.MAX7219_REG_DIGIT0 + pos, char, redraw=False)
+            self.write_char(char, constants.MAX7219_REG_DIGIT0 + pos, redraw=False)
 
         self.flush()
 
