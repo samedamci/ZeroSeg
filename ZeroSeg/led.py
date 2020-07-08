@@ -73,7 +73,7 @@ class device(object):
     def _values(self, position: int, buf: List[int]) -> Union[int, List[int]]:
         """
         A generator which yields the digit/column position and the data
-        value from that position for each of the cascaded devices.
+        value from that position.
         """
         yield position + constants.MAX7219_REG_DIGIT0
         yield buf[self.NUM_DIGITS + position]
@@ -113,10 +113,9 @@ class device(object):
 
     def brightness(self, intensity: int):
         """
-        Sets the brightness level of all cascaded devices to the same
-        intensity level, ranging from 0..15. Note that setting the brightness
-        to a high level will draw more current, and may cause intermittent
-        issues / crashes if the USB power source is insufficient.
+        Sets the brightness level of screen ranging from 0..15. Note that setting
+        the brightness to a high level will draw more current, and may cause
+        intermittent issues / crashes if the USB power source is insufficient.
         """
         assert 0 <= intensity < 16, "Invalid brightness: {intensity}."
         self.command(constants.MAX7219_REG_INTENSITY, intensity)
@@ -147,7 +146,7 @@ class device(object):
         Scrolls the buffer one column to the left. The data that scrolls off
         the left side re-appears at the right-most position. If redraw
         is not suppled, or left set to True, will force a redraw of all buffer
-        items
+        items.
         """
         t = self._buffer[-1]
         for i in range(self.NUM_DIGITS - 1, 0, -1):
@@ -161,7 +160,7 @@ class device(object):
         Scrolls the buffer one column to the right. The data that scrolls off
         the right side re-appears at the left-most position. If redraw
         is not suppled, or left set to True, will force a redraw of all buffer
-        items
+        items.
         """
         t = self._buffer[0]
         for i in range(0, self.NUM_DIGITS - 1, 1):
@@ -175,8 +174,8 @@ class device(object):
         Scrolls the buffer one column to the left. Any data that scrolls off
         the left side is lost and does not re-appear on the right. An empty
         column is inserted at the right-most position. If redraw
-        is not suppled, or set to True, will force a redraw of _all_ buffer
-        items
+        is not suppled, or set to True, will force a redraw of all buffer
+        items.
         """
         del self._buffer[0]
         self._buffer.append(0)
@@ -188,8 +187,8 @@ class device(object):
         Scrolls the buffer one column to the right. Any data that scrolls off
         the right side is lost and does not re-appear on the left. An empty
         column is inserted at the left-most position. If redraw
-        is not suppled, or set to True, will force a redraw of _all_ buffer
-        items
+        is not suppled, or set to True, will force a redraw of all buffer
+        items.
         """
         del self._buffer[-1]
         self._buffer.insert(0, 0)
@@ -305,9 +304,8 @@ class sevensegment(device):
         left_justify: bool = False,
     ):
         """
-        Formats the value according to the parameters supplied, and displays
-        on the specified device. If the formatted number is larger than
-        8 digits, then an OverflowError is raised.
+        Formats the value according to the parameters supplied, If the formatted
+        number is larger than 8 digits, then an OverflowError is raised.
         """
         assert base in self._RADIX, f"Invalid base: {base}"
 
@@ -348,8 +346,8 @@ class sevensegment(device):
 
     def write_text(self, text: str):
         """
-        Outputs the text (as near as possible) on the specific device. If
-        text is larger than 8 characters, then an OverflowError is raised.
+        Outputs the text as near as possible. If text is larger than 8 characters,
+        then an OverflowError is raised.
         """
         if len(text) > 8:
             raise OverflowError(f"{text} too large for display")
@@ -360,10 +358,9 @@ class sevensegment(device):
 
     def show_message(self, text: str, delay: float = 0.4):
         """
-        Transitions the text message across the devices from left-to-right.
+        Transitions the text message from left-to-right.
         """
-        # Add some spaces on (same number as cascaded devices) so that the
-        # message scrolls off to the left completely.
+        # Add some spaces on so that the message scrolls off to the left completely.
         text += " " * self.NUM_DIGITS * 2
         for value in text:
             time.sleep(delay)
