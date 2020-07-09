@@ -7,7 +7,7 @@ with open("README.md", "r") as readme:
 
 setup(
     name="ZeroSeg-Improved",
-    version="0.2.1",
+    version="0.3",
     author="Richard Saville, samedamci",
     author_email="samedamci@disroot.org",
     description=(

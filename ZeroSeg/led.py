@@ -356,6 +356,27 @@ class sevensegment(device):
 
         self.flush()
 
+    def write_blinking_text(
+        self,
+        text: str,
+        delay_hide: float = 0.4,
+        delay_show: float = 0.4,
+        stop_after: int = 5,
+    ):
+        """
+        Write any text not longer than 8 chars but blink him with specified time delays.
+        Stop blinking after specified in `stop_after` times.
+        """
+        if len(text) > 8:
+            raise OverflowError(f"{text} too large for display")
+
+        for _ in range(stop_after):
+            time.sleep(delay_hide)
+            for pos, char in enumerate(text.ljust(8)[::-1]):
+                self.write_char(char, constants.MAX7219_REG_DIGIT0 + pos, redraw=False)
+            time.sleep(delay_show)
+            self.clear()
+
     def show_message(self, text: str, delay: float = 0.4):
         """
         Transitions the text message from left-to-right.
