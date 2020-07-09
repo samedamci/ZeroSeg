@@ -374,6 +374,7 @@ class sevensegment(device):
             time.sleep(delay_hide)
             for pos, char in enumerate(text.ljust(8)[::-1]):
                 self.write_char(char, constants.MAX7219_REG_DIGIT0 + pos, redraw=False)
+            self.flush()
             time.sleep(delay_show)
             self.clear()
 
